@@ -1,9 +1,16 @@
 package com.mdg.spring.rest.webservices.restfulwebservices.users;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.net.URI;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,17 +36,22 @@ public class UserController {
 	}
 
 	@RequestMapping(path = "/users/{id}", method = RequestMethod.GET)
-	public User getUser(@PathVariable int id) {
+	public EntityModel<User> getUser(@PathVariable int id) {
 		User user = userService.getUser(id);
 		
 		if(user == null) {
 			throw new UserNotFoundException("User with id : "+ id + " is not found");
 		}
-		return user;
+		
+		EntityModel<User> model = new EntityModel<User>(user);
+		
+		WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).getAllUsers());
+		model.add(linkTo.withRel("all-users"));
+		return model;
 	}
 
 	@PostMapping("/users")
-	public ResponseEntity addUser(@RequestBody User user) {
+	public ResponseEntity addUser(@Valid @RequestBody User user) {
 		User savedUser = userService.addUser(user);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
