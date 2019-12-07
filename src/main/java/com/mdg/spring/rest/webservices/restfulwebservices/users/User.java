@@ -2,16 +2,24 @@ package com.mdg.spring.rest.webservices.restfulwebservices.users;
 
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
+@Entity
 public class User {
 	
+	@Id
 	private Integer id;
 	@Size(min = 2, message = "Name must be atlease 2 characters")
 	private String name;
 	@Past
 	private Date birthDate;
+	
+	public User() {
+		
+	}
 
 	public User(Integer id, String name, Date birthDate) {
 		super();
