@@ -1,21 +1,30 @@
 package com.mdg.spring.rest.webservices.restfulwebservices.users;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
+
+import com.mdg.spring.rest.webservices.restfulwebservices.posts.Post;
 
 @Entity
 public class User {
 	
 	@Id
+	@GeneratedValue
 	private Integer id;
 	@Size(min = 2, message = "Name must be atlease 2 characters")
 	private String name;
 	@Past
 	private Date birthDate;
+	
+	@OneToMany(mappedBy="user")
+	private List<Post> posts;
 	
 	public User() {
 		
@@ -54,6 +63,14 @@ public class User {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public List<Post> getPosts() {
+		return posts;
+	}
+
+	public void setPosts(List<Post> posts) {
+		this.posts = posts;
 	}
 
 	@Override

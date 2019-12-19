@@ -5,6 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -40,13 +41,13 @@ public class UserJpaController {
 
 	@RequestMapping(path = "/jpa/users/{id}", method = RequestMethod.GET)
 	public EntityModel<User> getUser(@PathVariable int id) {
-		User user = userService.getUser(id);
+		Optional<User> user = userRepository.findById(id);
 		
-		if(user == null) {
+		if(!user.isPresent()) {
 			throw new UserNotFoundException("User with id : "+ id + " is not found");
 		}
 		
-		EntityModel<User> model = new EntityModel<User>(user);
+		EntityModel<User> model = new EntityModel<User>(user.get());
 		
 		WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).getAllUsers());
 		model.add(linkTo.withRel("all-users"));
@@ -55,7 +56,7 @@ public class UserJpaController {
 
 	@PostMapping("/jpa/users")
 	public ResponseEntity addUser(@Valid @RequestBody User user) {
-		User savedUser = userService.addUser(user);
+		User savedUser = userRepository.save(user);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 		.buildAndExpand(savedUser.getId()).toUri();
@@ -65,14 +66,17 @@ public class UserJpaController {
 	
 	@GetMapping("/jpa/users/{id}/posts")
 	public List<Post> getAllPostsForUser(@PathVariable(name="id") Integer userId) {
-		return userService.getAllPostsForUser(userId);
+		
+		Optional<User> user = userRepository.findById(userId);
+		
+		if(!user.isPresent()) {
+			throw new UserNotFoundException("User with id : "+ userId + " is not found");
+		}
+		return user.get().getPosts();
 	}
 	
 	@DeleteMapping("/jpa/users/{id}")
 	public void deleteUser(@PathVariable int id) {
-		User user = userService.deleteUserById(id);
-		
-		if(user == null)
-			throw new UserNotFoundException("User with id : "+ id + " is not found");
+		userRepository.deleteById(id);
 	}
 }
